@@ -48,6 +48,10 @@
 -type year()     ::2000..10000.
 -type month()    :: 1..12.
 -type day()      :: 1..31.
+-type hour()     :: 1..24.
+-type minute()   :: 0..59.
+-type second()   :: 0..59.
+-type milliseconds() :: non_neg_integer().
 -type date()     :: {year(),month(),day()}.
 
 -type registration_id() :: binary()| string().
@@ -56,10 +60,9 @@
 
 -export_type([registration_id/0]).
 
--type push_msg() :: push_android_msg().
+-type push_msg() :: android_push_msg() | ios_push_msg().
 
-
--type push_android_msg()  ::
+-type android_push_msg()  ::
                      #{payload => nonempty_string(),%%消息的内容。（注意：需要对payload字符串做urlencode处理）
                      regestricted_package_name => string(), %%App的包名,packageName必须和开发者网站上申请的结果一致
                      pass_through => 0 | 1,%%0 表示通知栏消息 1 表示透传消息
@@ -89,6 +92,17 @@
                      'extra.app_version_not_in' => nonempty_string(), %%可选项, 无法接收消息的app版本号，用逗号分割
                      'extra.connpt' => nonempty_string() %%可选项,指定在特定的网络环境下才能接收到消息 目前仅支持指定”wifi”
                      }.
+
+
+-type ios_push_msg() ::
+                 #{description => nonempty_string(), %%通知栏展示的通知的
+%% 以上为必填项,以下为可选项
+                 time_to_live => non_neg_integer(),	%%可选项,如果用户离线,设置消息在服务器保存的时间,单位:ms.服务器默认最长保留两周
+                 time_to_send => non_neg_integer(),%%可选项。定时发送消息.用自1970年1月1日以来00:00:00.0 UTC时间表示(以毫秒为单位的时间).注:仅支持七天内的定时消息
+                 'extra.sound_url' => string(), %%可选项,自定义消息铃声.当值为空时为无声,default为系统默认声音
+                 'extra.badge' => non_neg_integer(), %%	可选项.通知角标
+                 'extra.category' => non_neg_integer() %% 可选项.iOS8推送消息快速回复类别
+                 }.
 
 
 

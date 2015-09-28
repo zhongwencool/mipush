@@ -6,6 +6,3 @@ see mipush_example.erl
 
 
 
-#todo :
- 
-1. ios 推送接口.

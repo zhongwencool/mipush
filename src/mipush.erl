@@ -140,7 +140,7 @@ get_msg_count_info(APIKey, StartDate, EndDate, APPName) ->
 %% @doc 追踪消息的状态
 -spec get_msg_status(api_key(), 'msg_id'|'job_key', string()) -> term().
 get_msg_status(APIKey, Type, Value) ->
-  Query = #{Type => Value},
+  Query = maps:put(Type, Value, #{}),
   Response = mipush_http:get(?MSG_STATUS, ?AUTH(APIKey), Query, ?PUSH_TIMEOUT),
   simplify_response(Response).
 
@@ -225,6 +225,13 @@ del_schedule_job(APIKey, JobID) ->
   Response = mipush_http:get(?JOB_DELETE, ?AUTH(APIKey), Querys, ?PUSH_TIMEOUT),
   simplify_response(Response).
 
+%% @doc 自1970年来的UTC毫秒数（国际时间，不是local_time, local_time中国区比universal_time快8小时）
+-spec milliseconds_utc_since_1970({{year(), month(), day()}, {hour(), minute(), second()}}) -> milliseconds().
+milliseconds_utc_since_1970({{_Year, _Month, _Day}, {_Hour, _Min, _Sec}} = Time) ->
+  [UTCTime] = calendar:local_time_to_universal_time_dst(Time),
+  (calendar:datetime_to_gregorian_seconds(UTCTime) -
+    calendar:datetime_to_gregorian_seconds({{1970, 01, 01}, {0, 0, 0 }})) * 1000.
+
 %%-------------------------------------------------------------------
 %% INTERNAL FUNCTION
 %%-------------------------------------------------------------------
@@ -280,8 +287,3 @@ to_binary(Value)when is_list(Value) -> list_to_binary(Value);
 to_binary(Value)when is_integer(Value) -> integer_to_binary(Value);
 to_binary(Value)when is_atom(Value) -> atom_to_binary(Value, latin1);
 to_binary(Value)when is_binary(Value) -> Value.
-
-milliseconds_utc_since_1970({{_Year, _Month, _Day}, {_Hour, _Min, _Sec}} = Time) ->
-  [UTCTime] = calendar:local_time_to_universal_time_dst(Time),
-  (calendar:datetime_to_gregorian_seconds(UTCTime) -
-    calendar:datetime_to_gregorian_seconds({{1970, 01, 01}, {0, 0, 0 }})) * 1000.
