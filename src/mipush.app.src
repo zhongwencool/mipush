@@ -1,0 +1,12 @@
+{application, mipush,
+ [
+   {description, "xiaomi push API by Erlang"},
+   {vsn, "1.0.0"},
+   {registered, []},
+   {applications, [
+     kernel,stdlib,ibrowse,jsx,ssl
+                  ]},
+   {mod, {mipush_app, []}},
+   {modules, []},
+   {env, []}
+ ]}.
