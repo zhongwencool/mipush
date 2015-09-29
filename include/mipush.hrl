@@ -73,7 +73,7 @@
                      time_to_live => 1..1209600000,%%可选项,如果用户离线, 设置消息在服务器保存的时间，单位：ms。服务器默认最长保留两周:1209600000
                      time_to_send => pos_integer(), %%可选项, 定时发送消息。仅支持七天内的定时消息,用自1970年1月1日以来00:00:00.0 UTC时间表示（以毫秒为单位的时间）
                      notify_id => pos_integer(), %%可选项,默认情况下，通知栏只显示一条推送消息。如果通知栏要显示多条推送消息，需要针对不同的消息设置不同的notify_id（相同notify_id的通知栏消息会覆盖之前的）
-                     'extra.sound_uri' => nonempty_string(), %%可选项,自定义通知栏消息铃声。extra.sound_uri的值设置为铃声的URI,不要加铃声文件的后缀,如:"android.resource://com.xiaomi.mipushdemo/raw/shaking"
+                     'extra.sound_uri' => nonempty_string(), %%可选项,自定义通知栏消息铃声。extra.sound_uri的值设置为铃声的URI,不要加铃声文件的后缀,如:"android.resource://com.xiaomi.mipushdemo/raw/shaking"铃声只能使用当前app内的资源，URI格式满足 android.resource://your packagename/XXX/XXX,铃声文件放在Android app的raw目录下
                      'extra.ticker' => string(), %%可选项,开启通知消息在状态栏滚动显示,如:"我是滚动的文字"
                      'extra.notify_foreground' => string(), %%可选项，开启/关闭app在前台时的通知弹出。当extra.notify_foreground值为”1″时，app会弹出通知栏消息；当extra.notify_foreground值为”0″时，app不会弹出通知栏消息。注：默认情况下会弹出通知栏消息
                      'extra.notify_effect' => string(), %%可选项，预定义通知栏消息的点击行为。通过设置extra.notify_effect的值以得到不同的预定义点击行为 "1"通知栏点击后打开app的Launcher Activity "2":通知栏点击后打开app的任一Activity（还需要传入extra.intent_uri) "3":通知栏点击后打开网页（还需要传入extra.web_uri）
@@ -104,7 +104,18 @@
                  'extra.category' => non_neg_integer() %% 可选项.iOS8推送消息快速回复类别
                  }.
 
+-type push_result() :: {ok, result()}|{error, result()}.
 
+%%#{<<"code">> => 0,
+%%<<"data">> => #{<<"id">> => <<"slm41b60443521684347Uj">>},
+%%<<"description">> => <<230,136,144,229,138,159>>,
+%%<<"info">> => <<"Received push messages for 1 regid">>,
+%%<<"result">> => <<"ok">>,
+%%<<"trace_id">> => <<"Xlm41b60443521684343pc">>
+-type result() :: #{result_key() => result_value()}.
+
+-type result_key() :: binary(). %% <<"code">>|<<"data">>|<<"description">>|<<"info">>|<<"result">>|<<"trace_id">>
+-type result_value() :: any().
 
 
 %%-------------------------------------------------------------------

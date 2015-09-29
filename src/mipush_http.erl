@@ -11,28 +11,29 @@
 -export([request/6]).
 -export([request/7]).
 -export([urlencode/1]).
--export([transform_map_to_list/1]).
 
+%%{ok, Status, ResponseHeaders, ResponseBody} | {ibrowse_req_id, req_id() } | {error, Reason}
+-type response() :: {ok, binary(), binary(), list()}|{ibrowse_req_id, non_neg_integer() }|{error, string()}.
 
--spec get(list()|binary(), list()|map(), integer()) -> term().
+-spec get(list()|binary(), list()|map(), integer()) -> response().
 get(Url, Querys, Timeout) ->
   request(get, Url, [], Querys, [], Timeout).
 
--spec get(list()|binary(), list(), list()|map(), integer()) -> term().
+-spec get(list()|binary(), list(), list()|map(), integer()) -> response().
 get(Url, Header, Querys, Timeout) ->
   request(get, Url, Header, Querys, [], Timeout).
 
--spec post(list()|binary(), list(), map()|list(), list(), integer()) -> term().
+-spec post(list()|binary(), list(), map()|list(), list(), integer()) -> response().
 post(Url, Headers, Querys, Bodys, Timeout) ->
   request(post, Url, Headers, Querys, Bodys, [], Timeout).
 
--spec request(get|post, list()|binary(), list(), map()|list(), list(), integer()) -> term().
+-spec request(get|post, list()|binary(), list(), map()|list(), list(), integer()) -> response().
 request(Method, Url, Headers, Querys, Bodys, Timeout) when is_binary(Url) ->
   request(Method, unicode_characters_to_list(Url), Headers, Querys, Bodys, Timeout);
 request(Method, Url, Headers, Querys, Bodys, Timeout) ->
   request(Method, Url, Headers, Querys, Bodys, [], Timeout).
 
--spec request(get|post, list()|binary(), list(), map()|list(), list(), list(), pos_integer()) -> term().
+-spec request(get|post, list()|binary(), list(), map()|list(), list(), list(), pos_integer()) -> response().
 request(Method, Url, Headers, Querys, Bodys, Options, Timeout) when is_binary(Url) ->
   request(Method, unicode_characters_to_list(Url), Headers, Querys, Bodys, Options, Timeout);
 request(Method, Url, Headers, Querys, Bodys, Options, Timeout) ->

@@ -3,7 +3,13 @@
 -module(mipush_example).
 -author("zhongwencool@gmail.com").
 
--compile(export_all).
+
+-export([subscribe_topic_test/0]).
+-export([subscribe_alias_test/0]).
+-export([push_one_msg_test/0]).
+-export([push_multi_msg_test/0]).
+-export([msg_state_test/0]).
+-export([check_schedule_test/0]).
 
 -include("mipush.hrl").
 
@@ -14,7 +20,7 @@
 -define(INTENT_URI(Id), <<"intent://yourdeeplink/", Id/binary, "?wid=", Id/binary, ?INTENET_URL/binary>>).
 
 -define(BOB_REGID, "BobRegidBase64").
--define(ALICE_REGID,"AliceRegidBase64").
+-define(ALICE_REGID, "AliceRegidBase64").
 -define(BOB_ACCOUNT, "bob_account").
 -define(ALICE_ACCOUNT, "alice_account").
 
@@ -51,7 +57,8 @@
   'extra.intent_uri' => ?INTENT_URI(<<"0520b3b6c4c0cd135821dc36cfcbe8602619e8">>)
 }).
 
-%% 订阅Topic
+%% @doc 订阅Topic
+-spec subscribe_topic_test() -> ok.
 subscribe_topic_test() ->
   R0 = mipush:unsubscribe_topic(?APIKEY, ?BOB_REGID, ?TOPIC_1),
   io:format("mipush:unsubscribe_topic(?APIKEY, ?BOB_REGID, ?TOPIC_1).~n~p~n", [R0]),
@@ -65,7 +72,8 @@ subscribe_topic_test() ->
   io:format("mipush:get_all_topic(?APIKEY, ?BOB_REGID, ?TOPIC_1).~n~p~n", [R4]),
   ok.
 
-%%订阅ALias
+%% @doc 订阅ALias
+-spec subscribe_alias_test() -> ok.
 subscribe_alias_test() ->
   R0 = mipush:get_all_alias(?APIKEY, ?BOB_REGID, ?APPNAME),
   io:format("mipush:get_all_alias(?APIKEY, ?BOB_REGID, ?APPNAME).~n~p~n", [R0]),
@@ -79,7 +87,8 @@ subscribe_alias_test() ->
   io:format("mipush:get_all_topic(?APIKEY, ?BOB_REGID, ?APPNAME).~n~p~n", [R4]),
   ok.
 
-%%推送单条消息
+%% @doc 推送单条消息
+-spec push_one_msg_test() -> ok.
 push_one_msg_test() ->
   R1 = mipush:push_to_regid(?APIKEY, [?BOB_REGID, ?ALICE_REGID], ?TEST_PUSH_MSG_1),
   io:format("mipush:push_to_regid(?APIKEY, [?BOB_REGID, ?ALICE_REGID], ?TEST_PUSH_MSG_1).~n~p~n", [R1]),
@@ -97,7 +106,8 @@ push_one_msg_test() ->
   io:format("mipush:push_to_multi_topic(?APIKEY, [?TOPIC_1, ?TOPIC_2] \"UNION\", ?TEST_PUSH_MSG_1).~n~p~n", [R6]),
   ok.
 
-%%推送多条消息
+%% @doc 推送多条消息
+-spec push_multi_msg_test() -> ok.
 push_multi_msg_test() ->
   %%定时5分钟后推送
   SendTime = calendar:gregorian_seconds_to_datetime(
@@ -115,7 +125,8 @@ push_multi_msg_test() ->
     ~n~p~n", [R3]),
   ok.
 
-%%查看消息的状态
+%% @doc 查看消息的状态
+-spec msg_state_test() -> ok.
 msg_state_test() ->
   EndDate = {Y, M , D} = erlang:date(),
   StartDate = case D of 1 -> EndDate ; _ -> {Y, M, D - 1} end,
@@ -134,7 +145,8 @@ msg_state_test() ->
   %%%io:format("mipush:get_invalid_regids(?APIKEY).~n~p~n", [R4]),
   ok.
 
-%%定时任务查看和删除
+%% @doc 定时任务查看和删除
+-spec check_schedule_test() -> ok.
 check_schedule_test() ->
   JobID = "jobID",
   R1 = mipush:check_schedule_job_exist(?APIKEY, JobID),
