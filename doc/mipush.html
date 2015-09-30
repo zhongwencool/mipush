@@ -10,7 +10,81 @@
 <hr>
 
 <h1>Module mipush</h1>
-<ul class="index"><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>
+<ul class="index"><li><a href="#types">Data Types</a></li><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>
+
+
+<h2><a name="types">Data Types</a></h2>
+
+<h3 class="typedecl"><a name="type-account">account()</a></h3>
+<p><tt>account() = string() | binary()</tt></p>
+
+
+<h3 class="typedecl"><a name="type-alias">alias()</a></h3>
+<p><tt>alias() = string() | binary()</tt></p>
+
+
+<h3 class="typedecl"><a name="type-android_push_msg">android_push_msg()</a></h3>
+<p><tt>android_push_msg() = #{payload =&gt; nonempty_string(), regestricted_package_name =&gt; string(), pass_through =&gt; 0 | 1, title =&gt; string(), description =&gt; string(), notify_type =&gt; string(), time_to_live =&gt; 1..1209600000, time_to_send =&gt; pos_integer(), notify_id =&gt; pos_integer(), 'extra.sound_uri' =&gt; nonempty_string(), 'extra.ticker' =&gt; string(), 'extra.notify_foreground' =&gt; string(), 'extra.notify_effect' =&gt; string(), 'extra.intent_uri' =&gt; string(), 'extra.web_uri' =&gt; <a href="#type-url">url()</a>, 'extra.flow_control' =&gt; integer(), 'extra.layout_name' =&gt; nonempty_string(), 'extra.layout_value' =&gt; nonempty_string(), 'extra.jobkey' =&gt; nonempty_string(), 'extra.callback' =&gt; <a href="#type-url">url()</a>, 'extra.locale' =&gt; nonempty_string(), 'extra.locale_not_in' =&gt; nonempty_string(), 'extra.model' =&gt; nonempty_string(), 'extra.model_not_in' =&gt; nonempty_string(), 'extra.app_version' =&gt; nonempty_string(), 'extra.app_version_not_in' =&gt; nonempty_string(), 'extra.connpt' =&gt; nonempty_string()}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-api_key">api_key()</a></h3>
+<p><tt>api_key() = binary() | string()</tt></p>
+
+
+<h3 class="typedecl"><a name="type-date">date()</a></h3>
+<p><tt>date() = {<a href="#type-year">year()</a>, <a href="#type-month">month()</a>, <a href="#type-day">day()</a>}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-day">day()</a></h3>
+<p><tt>day() = 1..31</tt></p>
+
+
+<h3 class="typedecl"><a name="type-hour">hour()</a></h3>
+<p><tt>hour() = 1..24</tt></p>
+
+
+<h3 class="typedecl"><a name="type-ios_push_msg">ios_push_msg()</a></h3>
+<p><tt>ios_push_msg() = #{description =&gt; nonempty_string(), time_to_live =&gt; non_neg_integer(), time_to_send =&gt; non_neg_integer(), 'extra.sound_url' =&gt; string(), 'extra.badge' =&gt; non_neg_integer(), 'extra.category' =&gt; non_neg_integer()}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-milliseconds">milliseconds()</a></h3>
+<p><tt>milliseconds() = non_neg_integer()</tt></p>
+
+
+<h3 class="typedecl"><a name="type-minute">minute()</a></h3>
+<p><tt>minute() = 0..59</tt></p>
+
+
+<h3 class="typedecl"><a name="type-month">month()</a></h3>
+<p><tt>month() = 1..12</tt></p>
+
+
+<h3 class="typedecl"><a name="type-push_msg">push_msg()</a></h3>
+<p><tt>push_msg() = <a href="#type-android_push_msg">android_push_msg()</a> | <a href="#type-ios_push_msg">ios_push_msg()</a></tt></p>
+
+
+<h3 class="typedecl"><a name="type-push_result">push_result()</a></h3>
+<p><tt>push_result() = {ok, <a href="#type-result">result()</a>} | {error, <a href="#type-result">result()</a>}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-registration_id">registration_id()</a></h3>
+<p><tt>registration_id() = binary() | string()</tt></p>
+
+
+<h3 class="typedecl"><a name="type-result">result()</a></h3>
+<p><tt>result() = #{binary() =&gt; any()}</tt></p>
+
+
+<h3 class="typedecl"><a name="type-second">second()</a></h3>
+<p><tt>second() = 0..59</tt></p>
+
+
+<h3 class="typedecl"><a name="type-url">url()</a></h3>
+<p><tt>url() = nonempty_string()</tt></p>
+
+
+<h3 class="typedecl"><a name="type-year">year()</a></h3>
+<p><tt>year() = 2000..10000</tt></p>
 
 
 <h2><a name="index">Function Index</a></h2>
@@ -24,7 +98,7 @@
 <tr><td valign="top"><a href="#get_msg_count_info-4">get_msg_count_info/4</a></td><td>获取消息的统计数据.</td></tr>
 <tr><td valign="top"><a href="#get_msg_status-3">get_msg_status/3</a></td><td>追踪消息的状态.</td></tr>
 <tr><td valign="top"><a href="#get_msgs_status-3">get_msgs_status/3</a></td><td></td></tr>
-<tr><td valign="top"><a href="#milliseconds_utc_since_1970-1">milliseconds_utc_since_1970/1</a></td><td>自1970年来的UTC毫秒数（国际时间，不是local_time, local_time中国区比universal_time快8小时）.</td></tr>
+<tr><td valign="top"><a href="#milliseconds_utc_since_1970-1">milliseconds_utc_since_1970/1</a></td><td>自1970年来的UTC毫秒数(国际时间:不是local_time:local_time中国区比universal_time快8小时).</td></tr>
 <tr><td valign="top"><a href="#multi_msg_to_account-3">multi_msg_to_account/3</a></td><td>针对不同的userAccount推送不同的消息.</td></tr>
 <tr><td valign="top"><a href="#multi_msg_to_alias-3">multi_msg_to_alias/3</a></td><td>针对不同的alias推送不同的消息.</td></tr>
 <tr><td valign="top"><a href="#multi_msg_to_regids-3">multi_msg_to_regids/3</a></td><td>针对不同的regid推送不同的消息.</td></tr>
@@ -44,118 +118,118 @@
 
 <h3 class="function"><a name="check_schedule_job_exist-2">check_schedule_job_exist/2</a></h3>
 <div class="spec">
-<p><tt>check_schedule_job_exist(APIKey::<a href="#type-api_key">api_key()</a>, JobID::string()) -&gt; term()</tt><br></p>
+<p><tt>check_schedule_job_exist(APIKey::<a href="#type-api_key">api_key()</a>, JobID::string()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>检测定时任务是否存在</p>
 
 <h3 class="function"><a name="del_schedule_job-2">del_schedule_job/2</a></h3>
 <div class="spec">
-<p><tt>del_schedule_job(APIKey::<a href="#type-api_key">api_key()</a>, JobID::string()) -&gt; term()</tt><br></p>
+<p><tt>del_schedule_job(APIKey::<a href="#type-api_key">api_key()</a>, JobID::string()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>删除定时任务</p>
 
 <h3 class="function"><a name="get_all_alias-3">get_all_alias/3</a></h3>
 <div class="spec">
-<p><tt>get_all_alias(APIKey::<a href="#type-api_key">api_key()</a>, RegID::<a href="#type-registration_id">registration_id()</a>, APPName::string()) -&gt; term()</tt><br></p>
+<p><tt>get_all_alias(APIKey::<a href="#type-api_key">api_key()</a>, RegID::<a href="#type-registration_id">registration_id()</a>, APPName::string()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p> 获取一个应用的某个用户目前设置的所有Alias</p>
 
 <h3 class="function"><a name="get_all_topic-3">get_all_topic/3</a></h3>
 <div class="spec">
-<p><tt>get_all_topic(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, APPName::string()) -&gt; term()</tt><br></p>
+<p><tt>get_all_topic(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, APPName::string()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>获取一个应用的某个用户目前订阅的所有Topic</p>
 
 <h3 class="function"><a name="get_invalid_regids-1">get_invalid_regids/1</a></h3>
 <div class="spec">
-<p><tt>get_invalid_regids(APIKey::<a href="#type-api_key">api_key()</a>) -&gt; term()</tt><br></p>
+<p><tt>get_invalid_regids(APIKey::<a href="#type-api_key">api_key()</a>) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>获取失效的regId列表
  获取失效的regId列表，每次请求最多返回1000个regId。
  每次请求之后，成功返回的失效的regId将会从MiPush数据库删除。</p>
 
 <h3 class="function"><a name="get_msg_count_info-4">get_msg_count_info/4</a></h3>
 <div class="spec">
-<p><tt>get_msg_count_info(APIKey::<a href="#type-api_key">api_key()</a>, StartDate::<a href="#type-date">date()</a>, EndDate::<a href="#type-date">date()</a>, APPName::string()) -&gt; term()</tt><br></p>
+<p><tt>get_msg_count_info(APIKey::<a href="#type-api_key">api_key()</a>, StartDate::<a href="#type-date">date()</a>, EndDate::<a href="#type-date">date()</a>, APPName::string()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>获取消息的统计数据</p>
 
 <h3 class="function"><a name="get_msg_status-3">get_msg_status/3</a></h3>
 <div class="spec">
-<p><tt>get_msg_status(APIKey::<a href="#type-api_key">api_key()</a>, Type::msg_id | job_key, Value::string()) -&gt; term()</tt><br></p>
+<p><tt>get_msg_status(APIKey::<a href="#type-api_key">api_key()</a>, Type::msg_id | job_key, Value::string()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>追踪消息的状态</p>
 
 <h3 class="function"><a name="get_msgs_status-3">get_msgs_status/3</a></h3>
 <div class="spec">
-<p><tt>get_msgs_status(APIKey::<a href="#type-api_key">api_key()</a>, BeginTime::non_neg_integer(), EndTime::non_neg_integer()) -&gt; term()</tt><br></p>
+<p><tt>get_msgs_status(APIKey::<a href="#type-api_key">api_key()</a>, BeginTime::non_neg_integer(), EndTime::non_neg_integer()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div>
 
 <h3 class="function"><a name="milliseconds_utc_since_1970-1">milliseconds_utc_since_1970/1</a></h3>
 <div class="spec">
 <p><tt>milliseconds_utc_since_1970(Time::{{<a href="#type-year">year()</a>, <a href="#type-month">month()</a>, <a href="#type-day">day()</a>}, {<a href="#type-hour">hour()</a>, <a href="#type-minute">minute()</a>, <a href="#type-second">second()</a>}}) -&gt; <a href="#type-milliseconds">milliseconds()</a></tt><br></p>
-</div><p>自1970年来的UTC毫秒数（国际时间，不是local_time, local_time中国区比universal_time快8小时）</p>
+</div><p>自1970年来的UTC毫秒数(国际时间:不是local_time:local_time中国区比universal_time快8小时)</p>
 
 <h3 class="function"><a name="multi_msg_to_account-3">multi_msg_to_account/3</a></h3>
 <div class="spec">
-<p><tt>multi_msg_to_account(APIKey::<a href="#type-api_key">api_key()</a>, Msgs::[{<a href="#type-account">account()</a>, <a href="#type-push_msg">push_msg()</a>}, ...], TimeToSend::non_neg_integer()) -&gt; term()</tt><br></p>
+<p><tt>multi_msg_to_account(APIKey::<a href="#type-api_key">api_key()</a>, Msgs::[{<a href="#type-account">account()</a>, <a href="#type-push_msg">push_msg()</a>}, ...], TimeToSend::non_neg_integer()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>针对不同的userAccount推送不同的消息</p>
 
 <h3 class="function"><a name="multi_msg_to_alias-3">multi_msg_to_alias/3</a></h3>
 <div class="spec">
-<p><tt>multi_msg_to_alias(APIKey::<a href="#type-api_key">api_key()</a>, Msgs::[{<a href="#type-alias">alias()</a>, <a href="#type-push_msg">push_msg()</a>}, ...], TimeToSend::non_neg_integer()) -&gt; term()</tt><br></p>
+<p><tt>multi_msg_to_alias(APIKey::<a href="#type-api_key">api_key()</a>, Msgs::[{<a href="#type-alias">alias()</a>, <a href="#type-push_msg">push_msg()</a>}, ...], TimeToSend::non_neg_integer()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>针对不同的alias推送不同的消息</p>
 
 <h3 class="function"><a name="multi_msg_to_regids-3">multi_msg_to_regids/3</a></h3>
 <div class="spec">
-<p><tt>multi_msg_to_regids(APIKey::<a href="#type-api_key">api_key()</a>, Msgs::[{<a href="#type-registration_id">registration_id()</a>, <a href="#type-push_msg">push_msg()</a>}, ...], TimeToSend::non_neg_integer()) -&gt; term()</tt><br></p>
+<p><tt>multi_msg_to_regids(APIKey::<a href="#type-api_key">api_key()</a>, Msgs::[{<a href="#type-registration_id">registration_id()</a>, <a href="#type-push_msg">push_msg()</a>}, ...], TimeToSend::non_neg_integer()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>针对不同的regid推送不同的消息</p>
 
 <h3 class="function"><a name="push_to_account-3">push_to_account/3</a></h3>
 <div class="spec">
-<p><tt>push_to_account(APIKey::<a href="#type-api_key">api_key()</a>, Accounts::[<a href="#type-account">account()</a>, ...], PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; term()</tt><br></p>
+<p><tt>push_to_account(APIKey::<a href="#type-api_key">api_key()</a>, Accounts::[<a href="#type-account">account()</a>, ...], PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>向某个account或一组account列表推送某条消息</p>
 
 <h3 class="function"><a name="push_to_alias-3">push_to_alias/3</a></h3>
 <div class="spec">
-<p><tt>push_to_alias(APIKey::<a href="#type-api_key">api_key()</a>, Alias::[<a href="#type-alias">alias()</a>, ...], PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; term()</tt><br></p>
+<p><tt>push_to_alias(APIKey::<a href="#type-api_key">api_key()</a>, Alias::[<a href="#type-alias">alias()</a>, ...], PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>向某个alias或一组alias列表推送某条消息</p>
 
 <h3 class="function"><a name="push_to_all-2">push_to_all/2</a></h3>
 <div class="spec">
-<p><tt>push_to_all(APIKey::<a href="#type-api_key">api_key()</a>, Msg::<a href="#type-push_msg">push_msg()</a>) -&gt; term()</tt><br></p>
+<p><tt>push_to_all(APIKey::<a href="#type-api_key">api_key()</a>, Msg::<a href="#type-push_msg">push_msg()</a>) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>向所有设备推送某条消息</p>
 
 <h3 class="function"><a name="push_to_multi_topic-4">push_to_multi_topic/4</a></h3>
 <div class="spec">
-<p><tt>push_to_multi_topic(APIKey::<a href="#type-api_key">api_key()</a>, Topics::[string(), ...], OP::string(), PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; term()</tt><br></p>
+<p><tt>push_to_multi_topic(APIKey::<a href="#type-api_key">api_key()</a>, Topics::[string(), ...], OP::string(), PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>向多个topic推送单条消息</p>
 
 <h3 class="function"><a name="push_to_regid-3">push_to_regid/3</a></h3>
 <div class="spec">
-<p><tt>push_to_regid(APIKey::<a href="#type-api_key">api_key()</a>, RegIDs::[<a href="#type-registration_id">registration_id()</a>, ...], PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; term()</tt><br></p>
+<p><tt>push_to_regid(APIKey::<a href="#type-api_key">api_key()</a>, RegIDs::[<a href="#type-registration_id">registration_id()</a>, ...], PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>向某个regid或一组regid列表推送某条消息</p>
 
 <h3 class="function"><a name="push_to_topic-3">push_to_topic/3</a></h3>
 <div class="spec">
-<p><tt>push_to_topic(APIKey::<a href="#type-api_key">api_key()</a>, Topic::nonempty_string(), PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; term()</tt><br></p>
+<p><tt>push_to_topic(APIKey::<a href="#type-api_key">api_key()</a>, Topic::nonempty_string(), PushMsg::<a href="#type-push_msg">push_msg()</a>) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>向某个topic推送某条消息</p>
 
 <h3 class="function"><a name="subscribe_alias-4">subscribe_alias/4</a></h3>
 <div class="spec">
-<p><tt>subscribe_alias(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, Topic::string(), Aliases::[<a href="#type-alias">alias()</a>]) -&gt; term()</tt><br></p>
+<p><tt>subscribe_alias(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, Topic::string(), Aliases::[<a href="#type-alias">alias()</a>]) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p> 订阅Regid的Aliases</p>
 
 <h3 class="function"><a name="subscribe_topic-4">subscribe_topic/4</a></h3>
 <div class="spec">
-<p><tt>subscribe_topic(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, Topic::string(), Category::undefined | string()) -&gt; term()</tt><br></p>
+<p><tt>subscribe_topic(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, Topic::string(), Category::undefined | string()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>订阅RegId的标签</p>
 
 <h3 class="function"><a name="unsubscribe_alias-4">unsubscribe_alias/4</a></h3>
 <div class="spec">
-<p><tt>unsubscribe_alias(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, Topic::string(), Aliases::[<a href="#type-alias">alias()</a>]) -&gt; term()</tt><br></p>
+<p><tt>unsubscribe_alias(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, Topic::string(), Aliases::[<a href="#type-alias">alias()</a>]) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p> 取消订阅RegId的Aliases</p>
 
 <h3 class="function"><a name="unsubscribe_topic-3">unsubscribe_topic/3</a></h3>
 <div class="spec">
-<p><tt>unsubscribe_topic(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, Topic::string()) -&gt; term()</tt><br></p>
+<p><tt>unsubscribe_topic(APIKey::<a href="#type-api_key">api_key()</a>, RegisterID::<a href="#type-registration_id">registration_id()</a>, Topic::string()) -&gt; <a href="#type-push_result">push_result()</a></tt><br></p>
 </div><p>取消订阅RegId的标签</p>
 <hr>
 
 <div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<p><i>Generated by EDoc, Sep 28 2015, 21:03:32.</i></p>
+<p><i>Generated by EDoc, Sep 30 2015, 12:14:14.</i></p>
 </body>
 </html>
