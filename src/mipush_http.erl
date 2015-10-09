@@ -37,13 +37,11 @@ request(Method, Url, Headers, Querys, Bodys, Timeout) ->
 request(Method, Url, Headers, Querys, Bodys, Options, Timeout) when is_binary(Url) ->
   request(Method, unicode_characters_to_list(Url), Headers, Querys, Bodys, Options, Timeout);
 request(Method, Url, Headers, Querys, Bodys, Options, Timeout) ->
-  FinalUrl = attach_query_parameters(Url, Querys),
-  {ok, ConnId} = ibrowse:spawn_worker_process(FinalUrl),
+  FinalUrl = attach_query_parameters(Url, Querys),  
   %io:format("~p~n", [[{url, FinalUrl}, {header, Headers}, {method, Method},
   %%% {body, Bodys}, {options, Options}, {timeout, Timeout}]]),
   Response = (catch ibrowse:send_req(FinalUrl, Headers, Method, Bodys,
-    [{socket_options, [{reuseaddr, true}]}| Options], Timeout)),
-  ibrowse:stop_worker_process(ConnId),
+    [{socket_options, [{reuseaddr, true}]}| Options], Timeout)),  
   Response.
 
 %%-------------------------------------------------------------------
