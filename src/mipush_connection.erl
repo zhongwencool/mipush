@@ -46,7 +46,6 @@ init(Name, #{host := Host, port := Port, timeout :=  Timeout,
   expires := Expires, ssl_opts := SSLOpts} = Connection) ->
   try
     {ok, Socket} = ssl:connect(Host, Port, ssl_opts(SSLOpts), Timeout),
-    io:format("~p~n", [init]),
     {ok, Connection#{socket => Socket, name => Name, expires_conn => epoch(Expires)}}
   catch
     _: ErrReason -> {stop, ErrReason}
@@ -126,7 +125,6 @@ handle_info({ssl, SslSocket, Data},#{socket := SslSocket, buffer := <<>>, err_ca
   end;
 
 handle_info({ssl_closed, SslSocket}, State = #{socket := SslSocket}) ->
-  io:format("126 handle_info ~p~n",[{ssl_closed, State}]),
   {noreply, State#{socket => undefined}};
 
 handle_info(Request, State) -> {stop, {unknown_request, Request}, State}.
@@ -140,7 +138,6 @@ terminate(_Reason, _State) -> ok.
 code_change(_OldVsn, State, _Extra) ->  {ok, State}.
 
 check_result(RestBin, ErrorFun) ->
-  io:format("check_result ~p~n", [RestBin]),
   ResultList = binary:split(RestBin, [<<"\r\n">>], [global]),
   case lists:keyfind(<<"result">>, 1, jsx:decode(lists:last(ResultList))) of
     {_, <<"ok">>} -> ok;
@@ -167,7 +164,6 @@ joint_req(Method, Query, Auth, Host) ->
 
 do_send_recv_data(Socket, Method, Query, Host, Auth) ->
   Msg = joint_req(Method, Query, Auth, Host),
-  io:format("call_to ssl======= ~p~n", [Msg]),
   ssl:setopts(Socket, [{active, false}]),
   case ssl:send(Socket, Msg) of
     ok ->

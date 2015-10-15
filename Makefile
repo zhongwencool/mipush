@@ -1,9 +1,8 @@
 PROJECT = mipush
 
-DEPS = jsx ibrowse
+DEPS = jsx
 
 dep_jsx = git git://github.com/talentdeficit/jsx.git v2.6.0
-dep_ibrowse = git git://github.com/cmullaparthi/ibrowse.git v4.1.2
 
 include erlang.mk
 
