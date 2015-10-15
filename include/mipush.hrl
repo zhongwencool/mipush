@@ -1,13 +1,10 @@
 %%%-------------------------------------------------------------------
 %%%-------------------------------------------------------------------
--author("zhongwencool@gmail.com").
+-author('zhongwencool@gmail.com').
 
 %%todo test API
 
 -define(PUSH_TIMEOUT, 10000).
-
--define(AUTH(APIKey), [{'Authorization', string:concat("key=", APIKey)}]).
-
 
 %% pass_through 1为透传,0为(通知栏信息)不透传
 -define(PASS_THROUGH_YES, 1).
@@ -36,81 +33,85 @@
 'extra.layout_value','extra.jobkey','extra.callback','extra.locale','extra.locale_not_in',
 'extra.model','extra.model_not_in','extra.app_version',
 'extra.app_version_not_in','extra.connpt']).
-%%-------------------------------------------------------------------
+
+-define(MI_URL, "api.xmpush.xiaomi.com").
+%% ===================================================================
 %%单条消息内容
-%%-------------------------------------------------------------------
+%% ===================================================================
 
 %%-------------------------------------------------------------------
 %%推送单条消息
 %%-------------------------------------------------------------------
 %%向某个regid或一组regid列表推送某条消息
--define(REGID_PUSH_URL, "https://api.xmpush.xiaomi.com/v2/message/regid").
+-define(REGID_PUSH_URL, "/v2/message/regid").
 
 %%向某个alias或一组alias列表推送某条消息
--define(ALIAS_PUSH_URL, "https://api.xmpush.xiaomi.com/v2/message/alias").
+-define(ALIAS_PUSH_URL, "/v2/message/alias").
 
 %%向某个account或一组account列表推送某条消息
--define(ACCOUNTS_PUSH_URL, "https://api.xmpush.xiaomi.com/v2/message/user_account").
+-define(ACCOUNTS_PUSH_URL, "/v2/message/user_account").
 
 %%向某个topic推送某条消息
--define(TOPIC_PUSH_URL, "https://api.xmpush.xiaomi.com/v2/message/topic").
+-define(TOPIC_PUSH_URL, "/v2/message/topic").
 
 %%向多个topic推送单条消息
--define(MULTI_TOPIC_PUSH_URL, "https://api.xmpush.xiaomi.com/v2/message/multi_topic").
+-define(MULTI_TOPIC_PUSH_URL, "/v2/message/multi_topic").
 
 %%向所有设备推送某条消息
--define(ALL_PUSH_URL, "https://api.xmpush.xiaomi.com/v2/message/all").
+-define(ALL_PUSH_URL, "/v2/message/all").
 
 %%-------------------------------------------------------------------
 %%推送多条消息
 %%-------------------------------------------------------------------
 %%针对不同的regid推送不同的消息
--define(REGIDS_MSGS_PUSH_URL, "https://api.xmpush.xiaomi.com/v2/multi_messages/regids").
+-define(REGIDS_MSGS_PUSH_URL, "/v2/multi_messages/regids").
 
 %%针对不同的alias推送不同的消息
--define(ALIAS_MSGS_PUSH_URL, "https://api.xmpush.xiaomi.com/v2/multi_messages/aliases").
+-define(ALIAS_MSGS_PUSH_URL, "/v2/multi_messages/aliases").
 
 %%针对不同的userAccount推送不同的消息
--define(ACCOUNT_MSGS_PUSH_URL, "https://api.xmpush.xiaomi.com/v2/multi_messages/user_accounts").
+-define(ACCOUNT_MSGS_PUSH_URL, "/v2/multi_messages/user_accounts").
 
-%%-------------------------------------------------------------------
+%% ===================================================================
 %%消息的状态数据
-%%-------------------------------------------------------------------
+%% ===================================================================
+
 %%获取消息的统计数据
--define(MSG_COUNTER_URL, "https://api.xmpush.xiaomi.com/v1/stats/message/counters").
+-define(MSG_COUNTER_URL, "/v1/stats/message/counters").
 
 %%追踪消息状态
--define(MSG_STATUS,"https://api.xmpush.xiaomi.com/v1/trace/message/status").
+-define(MSG_STATUS,"/v1/trace/message/status").
 
 %%追踪某个时间区域内的消息
--define(MSGS_STATUS, "https://api.xmpush.xiaomi.com/v1/trace/messages/status").
+-define(MSGS_STATUS, "/v1/trace/messages/status").
 
-%%-------------------------------------------------------------------
+%% ===================================================================
 %%订阅/取消订阅标签
-%%-------------------------------------------------------------------
+%% ===================================================================
+
 %%订阅RegId的标签
--define(SUB_TOPIC_URL, "https://api.xmpush.xiaomi.com/v2/topic/subscribe").
+-define(SUB_TOPIC_URL, "/v2/topic/subscribe").
 
 %%取消订阅RegId的标签
--define(UNSUB_TOPIC_URL, "https://api.xmpush.xiaomi.com/v2/topic/unsubscribe").
+-define(UNSUB_TOPIC_URL, "/v2/topic/unsubscribe").
 
 %%订阅alias的标签
--define(SUB_ALIAS_URL, "https://api.xmpush.xiaomi.com/v2/topic/subscribe/alias").
+-define(SUB_ALIAS_URL, "/v2/topic/subscribe/alias").
 
 %%取消订阅alias的标签
--define(UNSUB_ALIAS_URL, "https://api.xmpush.xiaomi.com/v2/topic/unsubscribe/alias").
+-define(UNSUB_ALIAS_URL, "/v2/topic/unsubscribe/alias").
 
 %%获取一个应用的某个用户目前订阅的所有Topic
--define(TOPIC_ALL, "https://api.xmpush.xiaomi.com/v1/topic/all").
+-define(TOPIC_ALL, "/v1/topic/all").
 
 %%获取失效的regId列表
 -define(INVALID_REGIDS_URL, "https://feedback.xmpush.xiaomi.com/v1/feedback/fetch_invalid_regids").
 
 %%获取一个应用的某个用户目前设置的所有Alias
--define(ALIAS_ALL, "https://api.xmpush.xiaomi.com/v1/alias/all").
+-define(ALIAS_ALL, "/v1/alias/all").
 
 %%检测定时任务是否存在
--define(JOB_EXIST, "https://api.xmpush.xiaomi.com/v2/schedule_job/exist").
+-define(JOB_EXIST, "/v2/schedule_job/exist").
 
 %%删除定时任务
--define(JOB_DELETE, "https://api.xmpush.xiaomi.com/v2/schedule_job/delete").
+-define(JOB_DELETE, "/v2/schedule_job/delete").

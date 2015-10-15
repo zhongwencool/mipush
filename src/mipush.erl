@@ -1,25 +1,30 @@
 %%%-------------------------------------------------------------------
 %%%-------------------------------------------------------------------
 -module(mipush).
--author("zhongwencool@gmail.com").
+-author('zhongwencool@gmail.com').
 
 -include("mipush.hrl").
 
 -define(MAX_TOPIC_LEN, 5).
 
 %% API
+
+-export([connect/1]).
+-export([connect/2]).
+-export([disconnect/1]).
+
 %% 推送单条消息
--export([push_to_regid/3]).
--export([push_to_alias/3]).
--export([push_to_account/3]).
--export([push_to_topic/3]).
--export([push_to_multi_topic/4]).
--export([push_to_all/2]).
+-export([push_to_regid/4]).
+-export([push_to_alias/4]).
+-export([push_to_account/4]).
+-export([push_to_topic/4]).
+-export([push_to_multi_topic/5]).
+-export([push_to_all/3]).
 
 %%推送多条消息
--export([multi_msg_to_regids/3]).
--export([multi_msg_to_alias/3]).
--export([multi_msg_to_account/3]).
+-export([multi_msg_to_regids/4]).
+-export([multi_msg_to_alias/4]).
+-export([multi_msg_to_account/4]).
 
 %%消息的状态数据
 -export([get_msg_count_info/4]).
@@ -28,11 +33,11 @@
 -export([get_invalid_regids/1]).
 
 %%订阅topic alias
--export([subscribe_topic/4]).
--export([unsubscribe_topic/3]).
+-export([subscribe_topic/5]).
+-export([unsubscribe_topic/4]).
 -export([get_all_topic/3]).
--export([unsubscribe_alias/4]).
--export([subscribe_alias/4]).
+-export([unsubscribe_alias/5]).
+-export([subscribe_alias/5]).
 -export([get_all_alias/3]).
 
 %% Job 操作
@@ -41,8 +46,6 @@
 
 %% Util
 -export([milliseconds_utc_since_1970/1]).
--type api_key() :: binary()| string().
--export_type([api_key/0]).
 
 -type url() :: nonempty_string().
 
@@ -109,200 +112,220 @@ time_to_send => non_neg_integer(),%%可选项。定时发送消息.用自1970年
 
 -type push_result() :: {ok, result()}|{error, result()}.
 
-%%#{<<"code">> => 0,
-%%<<"data">> => #{<<"id">> => <<"slm41b60443521684347Uj">>},
-%%<<"description">> => <<230,136,144,229,138,159>>,
-%%<<"info">> => <<"Received push messages for 1 regid">>,
-%%<<"result">> => <<"ok">>,
-%%<<"trace_id">> => <<"Xlm41b60443521684343pc">>
+-type connection() ::
+#{host => nonempty_string(),
+port => pos_integer(),
+ssl_opts => list(),
+timeout =>  pos_integer(),
+expires => pos_integer(),
+expires_conn => pos_integer(),
+socket => any(),
+err_callback => fun((binary()) -> stop | _),
+buffer => binary()
+}.
+-export_type([connection/0]).
 
 %% <<"code">>|<<"data">>|<<"description">>|<<"info">>|<<"result">>|<<"trace_id">>
 -type result() :: #{binary() => any()}.
 
 -export_type([push_result/0, result/0]).
 
-%%-------------------------------------------------------------------
+-spec connect(connection()) -> {ok, pid()} | {error, {already_started, pid()}} | {error, Reason::term()}.
+connect(Connection = #{})  ->
+  mipush_sup:start_connection(merge_connection(Connection)).
+-spec connect(atom()| string(),connection()) ->
+  {ok, pid()} | {error, {already_started, pid()}} | {error, Reason::term()}.
+connect(Name, Connection = #{}) when is_atom(Name) ->
+  mipush_sup:start_connection(Name, merge_connection(Connection)).
+
+-spec disconnect(pid()) -> ok.
+disconnect(ConnId) -> mipush_connection:stop(ConnId).
+
+%% ===================================================================
 %%推送单条消息
-%%-------------------------------------------------------------------
+%% ===================================================================
+
 %% @doc 向某个regid或一组regid列表推送某条消息
--spec push_to_regid(api_key(), [registration_id(), ...], push_msg())-> push_result().
-push_to_regid(APIKey, RegIDs = [_|_], PushMsg) ->
+-spec push_to_regid(pid(), [registration_id(), ...], push_msg(), return|no_return)-> ok.
+push_to_regid(ConnID, RegIDs = [_|_], PushMsg, ReturnType) ->
   Query = PushMsg#{registration_id => join(RegIDs, ", ")},
-  Response = mipush_http:post(?REGID_PUSH_URL, ?AUTH(APIKey), Query, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?REGID_PUSH_URL, Query)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
 %% @doc 向某个alias或一组alias列表推送某条消息
--spec push_to_alias(api_key(), [alias(), ...], push_msg()) -> push_result().
-push_to_alias(APIKey, Alias = [_|_], PushMsg) ->
+-spec push_to_alias(pid(), [alias(), ...], push_msg(), return|no_return) -> ok.
+push_to_alias(ConnID, Alias = [_|_], PushMsg, ReturnType) ->
   Query = PushMsg#{alias => join(Alias, ", ")},
-  Response = mipush_http:post(?ALIAS_PUSH_URL, ?AUTH(APIKey), Query, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?ALIAS_PUSH_URL, Query)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
-%% @doc 向某个account或一组account列表推送某条消息
--spec push_to_account(api_key(), [account(), ...], push_msg()) -> push_result().
-push_to_account(APIKey, Accounts = [_|_], PushMsg) ->
+%% @doc 向某个account或一组account列表推送某条消息 restapi没有提供设置account的接口，所以只能通过客户端做
+-spec push_to_account(pid(), [account(), ...], push_msg(), return|no_return) -> ok.
+push_to_account(ConnID, Accounts = [_|_], PushMsg, ReturnType) ->
   Query = PushMsg#{user_account => join(Accounts, ", ")},
-  Response = mipush_http:post(?ACCOUNTS_PUSH_URL, ?AUTH(APIKey), Query, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?ACCOUNTS_PUSH_URL, Query)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
 %% @doc 向某个topic推送某条消息
--spec push_to_topic(api_key(), nonempty_string(), push_msg()) -> push_result().
-push_to_topic(APIKey, Topic, PushMsg) ->
+-spec push_to_topic(pid(), nonempty_string(), push_msg(), return|no_return) -> ok.
+push_to_topic(ConnID, Topic, PushMsg, ReturnType) ->
   Query = PushMsg#{topic => Topic},
-  Response = mipush_http:post(?TOPIC_PUSH_URL, ?AUTH(APIKey), Query, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?TOPIC_PUSH_URL, Query)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
 %% @doc 向所有设备推送某条消息
--spec push_to_all(api_key(), push_msg()) -> push_result().
-push_to_all(APIKey, Msg) ->
-  Response = mipush_http:post(?ALL_PUSH_URL, ?AUTH(APIKey), Msg, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+-spec push_to_all(pid(), push_msg(), return|no_return) -> ok.
+push_to_all(ConnID, Msg, ReturnType) ->
+  Req = {"POST", mipush_connection:build_request(?ALL_PUSH_URL, Msg)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
 %% @doc 向多个topic推送单条消息
--spec push_to_multi_topic(api_key(), [string(), ...], string(), push_msg()) -> push_result().
-push_to_multi_topic(APIKey, Topics, OP, PushMsg)->
+-spec push_to_multi_topic(pid(), [string(), ...], string(), push_msg(), return|no_return) -> ok|{error, any()}.
+push_to_multi_topic(ConnID, Topics, OP, PushMsg, ReturnType)->
   case check_topic(Topics, OP) of
     ok ->
       Query = PushMsg#{topics => join(Topics, ":$")},
-      Response = mipush_http:post(?MULTI_TOPIC_PUSH_URL, ?AUTH(APIKey), Query, [], ?PUSH_TIMEOUT),
-      simplify_response(Response);
+      Req = {"POST", mipush_connection:build_request(?MULTI_TOPIC_PUSH_URL, Query)},
+      mipush_connection:send_message(ConnID, Req, ReturnType);
     {error, Reason} -> {error, Reason}
   end.
 
-%%-------------------------------------------------------------------
+%% ===================================================================
 %%推送多条消息
-%%-------------------------------------------------------------------
+%% ===================================================================
+
 %% @doc 针对不同的regid推送不同的消息
--spec multi_msg_to_regids(api_key(), [{registration_id(), push_msg()}, ...], non_neg_integer()) -> push_result().
-multi_msg_to_regids(APIKey, Msgs, TimeToSend)when is_integer(TimeToSend) ->
+-spec multi_msg_to_regids(pid(), [{registration_id(), push_msg()}, ...], non_neg_integer(), return|no_return) -> ok.
+multi_msg_to_regids(ConnID, Msgs, TimeToSend, ReturnType)when is_integer(TimeToSend) ->
   Query =
     case TimeToSend == 0 of
       true -> #{messages => jsx:encode(transform_extra(Msgs))};
       false -> #{messages => jsx:encode(transform_extra(Msgs)), time_to_send => TimeToSend}
     end,
-  Response = mipush_http:post(?REGIDS_MSGS_PUSH_URL, ?AUTH(APIKey), Query, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?REGIDS_MSGS_PUSH_URL, Query)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
 %% @doc 针对不同的alias推送不同的消息
--spec multi_msg_to_alias(api_key(), [{alias(), push_msg()}, ...], non_neg_integer()) -> push_result().
-multi_msg_to_alias(APIKey, Msgs, TimeToSend) when is_integer(TimeToSend) ->
+-spec multi_msg_to_alias(pid(), [{alias(), push_msg()}, ...], non_neg_integer(), return|no_return) -> ok.
+multi_msg_to_alias(ConnID, Msgs, TimeToSend, ReturnType) when is_integer(TimeToSend) ->
   Query =
     case TimeToSend == 0 of
       true -> #{messages => jsx:encode(transform_extra(Msgs))};
       false -> #{messages => jsx:encode(transform_extra(Msgs)), time_to_send => TimeToSend}
     end,
-  Response = mipush_http:post(?ALIAS_MSGS_PUSH_URL, ?AUTH(APIKey), Query, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?ALIAS_MSGS_PUSH_URL, Query)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
 %% @doc 针对不同的userAccount推送不同的消息
--spec multi_msg_to_account(api_key(), [{account(), push_msg()}, ...], non_neg_integer()) -> push_result().
-multi_msg_to_account(APIKey, Msgs, TimeToSend)when is_integer(TimeToSend) ->
+-spec multi_msg_to_account(pid(), [{account(), push_msg()}, ...], non_neg_integer(), return|no_return) -> ok.
+multi_msg_to_account(ConnID, Msgs, TimeToSend, ReturnType)when is_integer(TimeToSend) ->
   Query =
     case TimeToSend == 0 of
       true -> #{message => jsx:encode(transform_extra(Msgs))};
       false -> #{message => jsx:encode(transform_extra(Msgs)), time_to_send => TimeToSend}
     end,
-  Response = mipush_http:post(?ACCOUNT_MSGS_PUSH_URL, ?AUTH(APIKey), Query, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?ACCOUNT_MSGS_PUSH_URL, Query)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
-%%-------------------------------------------------------------------
+%% ===================================================================
 %%消息的状态数据
-%%-------------------------------------------------------------------
+%% ===================================================================
 %% @doc 获取消息的统计数据
--spec get_msg_count_info(api_key(), date(), date(), string()) -> push_result().
-get_msg_count_info(APIKey, StartDate, EndDate, APPName) ->
+-spec get_msg_count_info(pid(), date(), date(), string()) -> ok.
+get_msg_count_info(ConnID, StartDate, EndDate, APPName) ->
   Query = #{start_date => format_date(StartDate), end_date => format_date(EndDate),
     restricted_package_name => APPName},
-  Response = mipush_http:get(?MSG_COUNTER_URL, ?AUTH(APIKey), Query, ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"GET", mipush_connection:build_request(?MSG_COUNTER_URL, Query)},
+  mipush_connection:send_message(ConnID, Req, return).
 
 %% @doc 追踪消息的状态
--spec get_msg_status(api_key(), 'msg_id'|'job_key', string()) -> push_result().
-get_msg_status(APIKey, Type, Value) ->
+-spec get_msg_status(pid(), 'msg_id'|'job_key', string()) -> ok.
+get_msg_status(ConnID, Type, Value) ->
   Query = maps:put(Type, Value, #{}),
-  Response = mipush_http:get(?MSG_STATUS, ?AUTH(APIKey), Query, ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"GET", mipush_connection:build_request(?MSG_STATUS, Query)},
+  mipush_connection:send_message(ConnID, Req, return).
 
-
--spec get_msgs_status(api_key(), non_neg_integer(), non_neg_integer()) -> push_result().
-get_msgs_status(APIKey, BeginTime, EndTime) ->
+-spec get_msgs_status(pid(), non_neg_integer(), non_neg_integer()) -> ok.
+get_msgs_status(ConnID, BeginTime, EndTime) ->
   Query = #{begin_time => BeginTime, end_time => EndTime},
-  Response = mipush_http:get(?MSGS_STATUS, ?AUTH(APIKey), Query, ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"GET", mipush_connection:build_request(?MSGS_STATUS, Query)},
+  mipush_connection:send_message(ConnID, Req, return).
 
 %% @doc 获取失效的regId列表
 %%获取失效的regId列表，每次请求最多返回1000个regId。
 %%每次请求之后，成功返回的失效的regId将会从MiPush数据库删除。
--spec get_invalid_regids(api_key()) -> push_result().
-get_invalid_regids(APIKey) ->
-  mipush_http:get(?INVALID_REGIDS_URL, ?AUTH(APIKey), [], ?PUSH_TIMEOUT).
+-spec get_invalid_regids(pid()) -> ok.
+get_invalid_regids(ConnID) ->
+  Req = {"GET", mipush_connection:build_request(?INVALID_REGIDS_URL, [])},
+  mipush_connection:send_message(ConnID, Req, return).
 
-%%-------------------------------------------------------------------
+%% ===================================================================
 %%订阅 topic/alias
-%%-------------------------------------------------------------------
+%% ===================================================================
+
 %% @doc 订阅RegId的标签
--spec subscribe_topic(api_key(), registration_id(), string(), 'undefined'|string()) -> push_result().
-subscribe_topic(APIKey, RegisterID, Topic, Category) ->
+-spec subscribe_topic(pid(), registration_id(), string(), 'undefined'|string(), return|no_return) -> ok.
+subscribe_topic(ConnID, RegisterID, Topic, Category, ReturnType) ->
   Querys =
     case Category of
       undefined -> #{registration_id => RegisterID, topic => Topic};
       _ -> #{registration_id => RegisterID, topic => Topic, category => Category}
     end,
-  Response = mipush_http:post(?SUB_TOPIC_URL, ?AUTH(APIKey), Querys, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?SUB_TOPIC_URL, Querys)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
-%% @doc 取消订阅RegId的标签
--spec unsubscribe_topic(api_key(), registration_id(), string()) -> push_result().
-unsubscribe_topic(APIKey, RegisterID, Topic) ->
+%% @doc 取消订阅RegId的标签,
+-spec unsubscribe_topic(pid(), registration_id(), string(), return|no_return) -> ok.
+unsubscribe_topic(ConnID, RegisterID, Topic, ReturnType) ->
   Querys = #{registration_id => RegisterID, topic => Topic},
-  Response = mipush_http:post(?UNSUB_TOPIC_URL, ?AUTH(APIKey), Querys, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?UNSUB_TOPIC_URL, Querys)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
 %% @doc 获取一个应用的某个用户目前订阅的所有Topic
--spec get_all_topic(api_key(), registration_id(), string()) -> push_result().
-get_all_topic(APIKey, RegisterID, APPName) ->
+-spec get_all_topic(pid(), registration_id(), string()) -> ok.
+get_all_topic(ConnID, RegisterID, APPName) ->
   Querys = #{registration_id => RegisterID, regestricted_package_name => APPName},
-  Response = mipush_http:get(?TOPIC_ALL, ?AUTH(APIKey), Querys, ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"GET", mipush_connection:build_request(?TOPIC_ALL, Querys)},
+  mipush_connection:send_message(ConnID, Req, return).
 
-%% @doc  订阅Regid的Aliases
--spec subscribe_alias(api_key(), registration_id(), string(), [alias()]) -> push_result().
-subscribe_alias(APIKey, RegisterID, Topic, Aliases) ->
-  Querys = #{registration_id => RegisterID, topic => Topic,
-    aliases => Aliases, category => <<"global_push">>},
-  Response = mipush_http:post(?SUB_ALIAS_URL, ?AUTH(APIKey), Querys, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+%% @doc  订阅Regid的Aliases restapi没有提供设置alias的接口，所以只能通过客户端做
+-spec subscribe_alias(pid(), registration_id(), string(), [alias()], return|no_return) -> ok.
+subscribe_alias(ConnID, RegisterID, Topic, Aliases, ReturnType) ->
+  Querys = #{registration_id => RegisterID, topic => Topic, aliases => Aliases},
+  Req = {"POST", mipush_connection:build_request(?SUB_ALIAS_URL, Querys)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
 %% @doc  取消订阅RegId的Aliases
--spec unsubscribe_alias(api_key(), registration_id(), string(), [alias()]) -> push_result().
-unsubscribe_alias(APIKey, RegisterID, Topic, Aliases) ->
+-spec unsubscribe_alias(pid(), registration_id(), string(), [alias()], return|no_return) -> ok.
+unsubscribe_alias(ConnID, RegisterID, Topic, Aliases, ReturnType) ->
   Querys = #{registration_id => RegisterID, topic => Topic, aliases => Aliases},
-  Response = mipush_http:post(?UNSUB_ALIAS_URL, ?AUTH(APIKey), Querys, [], ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"POST", mipush_connection:build_request(?UNSUB_ALIAS_URL, Querys)},
+  mipush_connection:send_message(ConnID, Req, ReturnType).
 
 %% @doc  获取一个应用的某个用户目前设置的所有Alias
--spec get_all_alias(api_key(), registration_id(), string()) -> push_result().
-get_all_alias(APIKey, RegID, APPName) ->
+-spec get_all_alias(pid(), registration_id(), string()) -> ok.
+get_all_alias(ConnID, RegID, APPName) ->
   Querys = #{registration_id => RegID, regestricted_package_name => APPName},
-  Response = mipush_http:get(?ALIAS_ALL, ?AUTH(APIKey), Querys, ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"GET", mipush_connection:build_request(?ALIAS_ALL, Querys)},
+  mipush_connection:send_message(ConnID, Req, return).
 
-%%-------------------------------------------------------------------
+%% ===================================================================
 %%JOB 操作
-%%-------------------------------------------------------------------
+%% ===================================================================
+
 %% @doc 检测定时任务是否存在
--spec check_schedule_job_exist(api_key(), string()) -> push_result().
-check_schedule_job_exist(APIKey, JobID) ->
+-spec check_schedule_job_exist(pid(), string()) -> ok.
+check_schedule_job_exist(ConnID, JobID) ->
   Querys = #{job_id => JobID},
-  Response = mipush_http:get(?JOB_EXIST, ?AUTH(APIKey), Querys, ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"GET", mipush_connection:build_request(?JOB_EXIST, Querys)},
+  mipush_connection:send_message(ConnID, Req, return).
 
 %% @doc 删除定时任务
--spec del_schedule_job(api_key(), string()) -> push_result().
-del_schedule_job(APIKey, JobID) ->
+-spec del_schedule_job(pid(), string()) -> ok.
+del_schedule_job(ConnID, JobID) ->
   Querys = #{job_id => JobID},
-  Response = mipush_http:get(?JOB_DELETE, ?AUTH(APIKey), Querys, ?PUSH_TIMEOUT),
-  simplify_response(Response).
+  Req = {"GET", mipush_connection:build_request(?JOB_DELETE, Querys)},
+  mipush_connection:send_message(ConnID, Req, return).
 
 %% @doc 自1970年来的UTC毫秒数(国际时间:不是local_time:local_time中国区比universal_time快8小时)
 -spec milliseconds_utc_since_1970({{year(), month(), day()}, {hour(), minute(), second()}}) -> milliseconds().
@@ -311,16 +334,23 @@ milliseconds_utc_since_1970({{_Year, _Month, _Day}, {_Hour, _Min, _Sec}} = Time)
   (calendar:datetime_to_gregorian_seconds(UTCTime) -
     calendar:datetime_to_gregorian_seconds({{1970, 01, 01}, {0, 0, 0 }})) * 1000.
 
-%%-------------------------------------------------------------------
+%% ===================================================================
 %% INTERNAL FUNCTION
-%%-------------------------------------------------------------------
-simplify_response({ok, "200", _, Res}) ->
-  ResMap  = #{<<"result">> := Result} = jsx:decode(list_to_binary(Res), [return_maps]),
-  case Result of
-    <<"ok">> -> {ok, ResMap};
-    <<"error">> -> {error, ResMap}
-  end;
-simplify_response(Error) -> {error, Error}.
+%% ===================================================================
+
+merge_connection(Connection) ->
+  Default = #{host => "api.xmpush.xiaomi.com",
+    port => 443,
+    auth_key => "Your_api_key==",
+    ssl_opts => [{nodelay, true}, {reuseaddr, true}],
+    timeout =>  30000,%% ms
+    expires => 300, %% s
+    expires_conn => 0,
+    socket => undefined,
+    err_callback => fun(T) -> io:format("~p~n", [T]) end,
+    buffer => <<>>
+  },
+  maps:merge(Default, Connection).
 
 %% EXCEPT 差集 INTERSECTION 交集 UNION 并集
 check_topic(Topics, OP)when OP == "UNION" orelse OP == "INTERSECTION" orelse OP == "EXCEPT" ->
