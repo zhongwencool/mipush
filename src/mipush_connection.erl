@@ -15,7 +15,7 @@
 -export([send_message/3]).
 
 %% gen_server callback
--export([start_link/1, start_link/2, init/1, init/2, handle_call/3,
+-export([start_link/1, start_link/2, init/1, handle_call/3,
   handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -define(TIMEOUT, 10*1000).
@@ -36,16 +36,12 @@ start_link(Connection) ->
   gen_server:start_link(?MODULE, Connection, []).
 
 %% @hidden
--spec init(mipush:connection()) -> {ok, mipush:connection()} | {stop, term()}.
-init([Name, Connection]) -> init(Name, Connection);
-init(Connection) -> init(?MODULE, Connection).
-
-%% @hidden
--spec init(atom(), mipush:connection()) -> {ok, mipush:connection() | {stop, term()}}.
-init(Name, #{host := Host, port := Port, timeout :=  Timeout,
+-spec init(mipush:connection()) -> {ok, mipush:connection() | {stop, term()}}.
+init(#{host := Host, port := Port, timeout :=  Timeout, name := Name,
   expires := Expires, ssl_opts := SSLOpts} = Connection) ->
   try
     {ok, Socket} = ssl:connect(Host, Port, ssl_opts(SSLOpts), Timeout),
+    erlang:register(Name, self()),
     {ok, Connection#{socket => Socket, name => Name, expires_conn => epoch(Expires)}}
   catch
     _: ErrReason -> {stop, ErrReason}
@@ -76,7 +72,7 @@ handle_call({Method, Query} = Req, From, State = #{socket := Socket, host := Hos
       case do_send_recv_data(Socket, Method, Query, Host, Auth) of
         {reply, Data} ->
           NewData = re:replace(Data, <<"\r\n\.+\r\n">>, <<"">>, [global, {return, binary}]),
-          DataList = binary:split(NewData,[<<",">>],[global]),
+          DataList = binary:split(NewData, [<<",">>], [global]),
           {reply, DataList, State#{expires_conn => epoch(Expires)}};
         {error, Reason} -> {reply, {error, Reason}, State}
       end
@@ -101,7 +97,7 @@ handle_cast({Method, Query}, State = #{socket := Socket, host := Host, auth_key 
   case ExpiresConn =< epoch(0) of
     true ->
       ssl:close(Socket),
-      handle_cast(Query,State#{socket => undefined});
+      handle_cast(Query, State#{socket => undefined});
     false ->
       Msg = joint_req(Method, Query, Auth, Host),
       case ssl:send(Socket, Msg) of
@@ -114,7 +110,7 @@ handle_cast({Method, Query}, State = #{socket := Socket, host := Host, auth_key 
 %% @hidden
 -spec handle_info({ssl, tuple(), binary()} | {ssl_closed, tuple()} | X, mipush:connection()) ->
   {noreply, mipush:connection()} | {stop, ssl_closed | {unknown_request, X}, mipush:connection()}.
-handle_info({ssl, SslSocket, Data},#{socket := SslSocket, buffer := <<>>, err_callback := ErrCallback} = State) ->
+handle_info({ssl, SslSocket, Data}, #{socket := SslSocket, err_callback := ErrCallback} = State) ->
   case binary:split(Data, [<<"\r\n">>], [trim]) of
     [<<"HTTP/1.1 200 OK">>, RestBin] ->
       case check_result(RestBin, ErrCallback) of
@@ -157,9 +153,9 @@ build_request(Path, QueryParameters) ->
 
 joint_req(Method, Query, Auth, Host) ->
   [Method, " ", Query, " ", "HTTP/1.1", "\r\n",
-    [["Authorization",": ", Auth, "\r\n"],
+    [["Authorization", ": ", Auth, "\r\n"],
       ["Host", ": ", Host, "\r\n"],
-      ["Content-Length",": ","0","\r\n"]],
+      ["Content-Length", ": ", "0", "\r\n"]],
     "\r\n"].
 
 do_send_recv_data(Socket, Method, Query, Host, Auth) ->
@@ -206,7 +202,7 @@ receive_chunked_data(Socket, Acc) ->
 
 %% second
 epoch(ExpireTime) ->
-  {M,S,_} = os:timestamp(),
+  {M, S, _} = os:timestamp(),
   M * 1000000 + S + ExpireTime.
 
 -define(PERCENT, 37).  % $\%

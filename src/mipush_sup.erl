@@ -7,7 +7,7 @@
 
 -behaviour(supervisor).
 
--export([start_link/0, start_connection/1, start_connection/2]).
+-export([start_link/0, start_connection/1]).
 %% API callback
 -export([init/1]).
 
@@ -24,12 +24,6 @@ start_link() ->
 -spec start_connection(mipush:connection()) -> {ok, pid()} | {error, term()}.
 start_connection(Connection) ->
   supervisor:start_child(?MODULE, [Connection]).
-
-%% @hidden
--spec start_connection(atom(), mipush:connection()) ->
-  {ok, pid()} | {error, term()}.
-start_connection(Name, Connection) ->
-  supervisor:start_child(?MODULE, [Name, Connection]).
 
 %% ===================================================================
 %% Supervisor callbacks

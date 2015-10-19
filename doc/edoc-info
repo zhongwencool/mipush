@@ -1,3 +1,4 @@
 %% encoding: UTF-8
 {application,mipush}.
-{modules,[mipush,mipush_app,mipush_example,mipush_http]}.
+{modules,[mipush,mipush_app,mipush_connection,mipush_example,mipush_queue,
+          mipush_sup]}.
