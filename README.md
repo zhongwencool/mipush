@@ -1,5 +1,7 @@
 ##小米推送服务器 API
 
+小米推送的服务器 API Erlang实现
+
 [小米推送官网](http://dev.xiaomi.com/doc/?p=533)
 
 
