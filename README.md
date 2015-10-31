@@ -40,9 +40,8 @@
 2. 拼凑符合小米官方的restful API接口request请求格式;
 3. 使ssl:send/2发送步骤2拼凑的消息所直接返回ok;
 4. 重复步骤2,3;
-5. 小米服务器会主动对步骤3中的每一个消息都异步的repsonse;
-..* repsonse ok -> ok;
-..* repsonse error -> 使用ssl:connect/3中定义的err_callback函数处理。
+5. 小米服务器会主动对步骤3中的每一个消息都异步的repsonse,
+   如果repsonse error, 则使用ssl:connect/3中定义的err_callback函数处理;
 6. 发送完毕后，可以手动使用ssl:close/1 关闭连接（小米服务器如果没有一段时间没有收到请求，也会在自动发ssl_closed主动要求关闭连接).
 
 ####同步发送请求流程:
