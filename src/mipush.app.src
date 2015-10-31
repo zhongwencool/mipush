@@ -4,7 +4,7 @@
    {vsn, "1.0.0"},
    {registered, []},
    {applications, [
-     kernel,stdlib,jsx,ssl
+     kernel,stdlib,jsx,ssl,crypto
                   ]},
    {mod, {mipush_app, []}},
    {modules, []},
