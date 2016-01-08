@@ -400,7 +400,7 @@ milliseconds_utc_since_1970({{_Year, _Month, _Day}, {_Hour, _Min, _Sec}} = Time)
 
 merge_connection(Connection) ->
   Default = #{host => "api.xmpush.xiaomi.com",
-    name => ?MODULE,
+    name => undefined,
     port => 443,
     auth_key => "please_config_api_key",
     ssl_opts => [{nodelay, true}, {reuseaddr, true}],

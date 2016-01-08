@@ -41,7 +41,11 @@ init(#{host := Host, port := Port, timeout :=  Timeout, name := Name,
   expires := Expires, ssl_opts := SSLOpts} = Connection) ->
   try
     {ok, Socket} = ssl:connect(Host, Port, ssl_opts(SSLOpts), Timeout),
-    erlang:register(Name, self()),
+    case Name of
+      undefined -> ok;
+      _ when is_atom(Name) -> erlang:register(Name, self());
+      _ -> ok
+    end,
     {ok, Connection#{socket => Socket, name => Name, expires_conn => epoch(Expires)}}
   catch
     _: ErrReason -> {stop, ErrReason}
