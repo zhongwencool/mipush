@@ -14,23 +14,23 @@
 -export([disconnect/1]).
 
 %% 推送单条消息
--export([push_to_regid/4]).
--export([push_to_alias/4]).
--export([push_to_account/4]).
--export([push_to_topic/4]).
--export([push_to_multi_topic/5]).
--export([push_to_all/3]).
+-export([push_to_regid/5]).
+-export([push_to_alias/5]).
+-export([push_to_account/5]).
+-export([push_to_topic/5]).
+-export([push_to_multi_topic/6]).
+-export([push_to_all/4]).
 
 %%推送多条消息
--export([multi_msg_to_regids/4]).
--export([multi_msg_to_alias/4]).
--export([multi_msg_to_account/4]).
+-export([multi_msg_to_regids/5]).
+-export([multi_msg_to_alias/5]).
+-export([multi_msg_to_account/5]).
 
 %%消息的状态数据
--export([get_msg_count_info/4]).
--export([get_msg_status/3]).
--export([get_msgs_status/3]).
--export([get_invalid_regids/1]).
+-export([get_msg_count_info/5]).
+-export([get_msg_status/4]).
+-export([get_msgs_status/4]).
+-export([get_invalid_regids/2]).
 
 %%订阅topic alias
 -export([subscribe_topic/5]).
@@ -185,51 +185,51 @@ disconnect(ConnId) -> mipush_connection:stop(ConnId).
 %% ===================================================================
 
 %% @doc 向某个regid或一组regid列表推送某条消息
--spec push_to_regid(pid(), [registration_id(), ...], push_msg(), return|no_return)-> ok|result().
-push_to_regid(ConnID, RegIDs = [_|_], PushMsg, ReturnType) ->
+-spec push_to_regid(pid(), atom(), [registration_id(), ...], push_msg(), return|no_return)-> ok|result().
+push_to_regid(ConnID, MsgType, RegIDs = [_|_], PushMsg, ReturnType) ->
   Query = PushMsg#{registration_id => join(RegIDs, ", ")},
-  Req = {"POST", mipush_connection:build_request(?REGID_PUSH_URL, Query)},
+  Req = {"POST", MsgType, mipush_connection:build_request(?REGID_PUSH_URL, Query)},
   Result = mipush_connection:send_message(ConnID, Req, ReturnType),
   simplify_to_result(Result).
 
 %% @doc 向某个alias或一组alias列表推送某条消息
--spec push_to_alias(pid(), [alias(), ...], push_msg(), return|no_return) -> ok|result().
-push_to_alias(ConnID, Alias = [_|_], PushMsg, ReturnType) ->
+-spec push_to_alias(pid(), atom(), [alias(), ...], push_msg(), return|no_return) -> ok|result().
+push_to_alias(ConnID, MsgType, Alias = [_|_], PushMsg, ReturnType) ->
   Query = PushMsg#{alias => join(Alias, ", ")},
-  Req = {"POST", mipush_connection:build_request(?ALIAS_PUSH_URL, Query)},
+  Req = {"POST", MsgType, mipush_connection:build_request(?ALIAS_PUSH_URL, Query)},
   Result = mipush_connection:send_message(ConnID, Req, ReturnType),
   simplify_to_result(Result).
 
 %% @doc 向某个account或一组account列表推送某条消息 restapi没有提供设置account的接口，所以只能通过客户端做
--spec push_to_account(pid(), [account(), ...], push_msg(), return|no_return) -> ok|result().
-push_to_account(ConnID, Accounts = [_|_], PushMsg, ReturnType) ->
+-spec push_to_account(pid(), atom(), [account(), ...], push_msg(), return|no_return) -> ok|result().
+push_to_account(ConnID, MsgType, Accounts = [_|_], PushMsg, ReturnType) ->
   Query = PushMsg#{user_account => join(Accounts, ", ")},
-  Req = {"POST", mipush_connection:build_request(?ACCOUNTS_PUSH_URL, Query)},
+  Req = {"POST", MsgType, mipush_connection:build_request(?ACCOUNTS_PUSH_URL, Query)},
   Result = mipush_connection:send_message(ConnID, Req, ReturnType),
   simplify_to_result(Result).
 
 %% @doc 向某个topic推送某条消息
--spec push_to_topic(pid(), nonempty_string(), push_msg(), return|no_return) -> ok|result().
-push_to_topic(ConnID, Topic, PushMsg, ReturnType) ->
+-spec push_to_topic(pid(), atom(), nonempty_string(), push_msg(), return|no_return) -> ok|result().
+push_to_topic(ConnID, MsgType, Topic, PushMsg, ReturnType) ->
   Query = PushMsg#{topic => Topic},
-  Req = {"POST", mipush_connection:build_request(?TOPIC_PUSH_URL, Query)},
+  Req = {"POST", MsgType, mipush_connection:build_request(?TOPIC_PUSH_URL, Query)},
   Result = mipush_connection:send_message(ConnID, Req, ReturnType),
   simplify_to_result(Result).
 
 %% @doc 向所有设备推送某条消息
--spec push_to_all(pid(), push_msg(), return|no_return) -> ok|result().
-push_to_all(ConnID, Msg, ReturnType) ->
-  Req = {"POST", mipush_connection:build_request(?ALL_PUSH_URL, Msg)},
+-spec push_to_all(pid(), atom(), push_msg(), return|no_return) -> ok|result().
+push_to_all(ConnID, MsgType, Msg, ReturnType) ->
+  Req = {"POST", MsgType, mipush_connection:build_request(?ALL_PUSH_URL, Msg)},
   Result = mipush_connection:send_message(ConnID, Req, ReturnType),
   simplify_to_result(Result).
 
 %% @doc 向多个topic推送单条消息
--spec push_to_multi_topic(pid(), [string(), ...], string(), push_msg(), return|no_return) -> ok|{error, any()}.
-push_to_multi_topic(ConnID, Topics, OP, PushMsg, ReturnType)->
+-spec push_to_multi_topic(pid(), atom(), [string(), ...], string(), push_msg(), return|no_return) -> ok|{error, any()}.
+push_to_multi_topic(ConnID, MsgType, Topics, OP, PushMsg, ReturnType)->
   case check_topic(Topics, OP) of
     ok ->
       Query = PushMsg#{topics => join(Topics, ":$")},
-      Req = {"POST", mipush_connection:build_request(?MULTI_TOPIC_PUSH_URL, Query)},
+      Req = {"POST", MsgType, mipush_connection:build_request(?MULTI_TOPIC_PUSH_URL, Query)},
       Result = mipush_connection:send_message(ConnID, Req, ReturnType),
       simplify_to_result(Result);
     {error, Reason} -> {error, Reason}
@@ -240,38 +240,38 @@ push_to_multi_topic(ConnID, Topics, OP, PushMsg, ReturnType)->
 %% ===================================================================
 
 %% @doc 针对不同的regid推送不同的消息
--spec multi_msg_to_regids(pid(), [{registration_id(), push_msg()}, ...], non_neg_integer(), return|no_return) -> ok|result().
-multi_msg_to_regids(ConnID, Msgs, TimeToSend, ReturnType)when is_integer(TimeToSend) ->
+-spec multi_msg_to_regids(pid(), atom(), [{registration_id(), push_msg()}, ...], non_neg_integer(), return|no_return) -> ok|result().
+multi_msg_to_regids(ConnID, MsgType, Msgs, TimeToSend, ReturnType)when is_integer(TimeToSend) ->
   Query =
     case TimeToSend == 0 of
       true -> #{messages => jsx:encode(transform_extra(Msgs))};
       false -> #{messages => jsx:encode(transform_extra(Msgs)), time_to_send => TimeToSend}
     end,
-  Req = {"POST", mipush_connection:build_request(?REGIDS_MSGS_PUSH_URL, Query)},
+  Req = {"POST", MsgType, mipush_connection:build_request(?REGIDS_MSGS_PUSH_URL, Query)},
   Result = mipush_connection:send_message(ConnID, Req, ReturnType),
   simplify_to_result(Result).
 
 %% @doc 针对不同的alias推送不同的消息
--spec multi_msg_to_alias(pid(), [{alias(), push_msg()}, ...], non_neg_integer(), return|no_return) -> ok|result().
-multi_msg_to_alias(ConnID, Msgs, TimeToSend, ReturnType) when is_integer(TimeToSend) ->
+-spec multi_msg_to_alias(pid(), atom(), [{alias(), push_msg()}, ...], non_neg_integer(), return|no_return) -> ok|result().
+multi_msg_to_alias(ConnID, Msgs, MsgType, TimeToSend, ReturnType) when is_integer(TimeToSend) ->
   Query =
     case TimeToSend == 0 of
       true -> #{messages => jsx:encode(transform_extra(Msgs))};
       false -> #{messages => jsx:encode(transform_extra(Msgs)), time_to_send => TimeToSend}
     end,
-  Req = {"POST", mipush_connection:build_request(?ALIAS_MSGS_PUSH_URL, Query)},
+  Req = {"POST", MsgType, mipush_connection:build_request(?ALIAS_MSGS_PUSH_URL, Query)},
   Result = mipush_connection:send_message(ConnID, Req, ReturnType),
   simplify_to_result(Result).
 
 %% @doc 针对不同的userAccount推送不同的消息
--spec multi_msg_to_account(pid(), [{account(), push_msg()}, ...], non_neg_integer(), return|no_return) -> ok|result().
-multi_msg_to_account(ConnID, Msgs, TimeToSend, ReturnType)when is_integer(TimeToSend) ->
+-spec multi_msg_to_account(pid(), atom(), [{account(), push_msg()}, ...], non_neg_integer(), return|no_return) -> ok|result().
+multi_msg_to_account(ConnID, MsgType, Msgs, TimeToSend, ReturnType)when is_integer(TimeToSend) ->
   Query =
     case TimeToSend == 0 of
       true -> #{message => jsx:encode(transform_extra(Msgs))};
       false -> #{message => jsx:encode(transform_extra(Msgs)), time_to_send => TimeToSend}
     end,
-  Req = {"POST", mipush_connection:build_request(?ACCOUNT_MSGS_PUSH_URL, Query)},
+  Req = {"POST", MsgType, mipush_connection:build_request(?ACCOUNT_MSGS_PUSH_URL, Query)},
   Result = mipush_connection:send_message(ConnID, Req, ReturnType),
   simplify_to_result(Result).
 
@@ -279,35 +279,35 @@ multi_msg_to_account(ConnID, Msgs, TimeToSend, ReturnType)when is_integer(TimeTo
 %%消息的状态数据
 %% ===================================================================
 %% @doc 获取消息的统计数据
--spec get_msg_count_info(pid(), date(), date(), string()) -> result().
-get_msg_count_info(ConnID, StartDate, EndDate, APPName) ->
+-spec get_msg_count_info(pid(), atom(), date(), date(), string()) -> result().
+get_msg_count_info(ConnID, MsgType, StartDate, EndDate, APPName) ->
   Query = #{start_date => format_date(StartDate), end_date => format_date(EndDate),
     restricted_package_name => APPName},
-  Req = {"GET", mipush_connection:build_request(?MSG_COUNTER_URL, Query)},
+  Req = {"GET", MsgType, mipush_connection:build_request(?MSG_COUNTER_URL, Query)},
   Result = mipush_connection:send_message(ConnID, Req, return),
   simplify_to_result(Result).
 
 %% @doc 追踪消息的状态
--spec get_msg_status(pid(), 'msg_id'|'job_key', string()) -> result().
-get_msg_status(ConnID, Type, Value) ->
+-spec get_msg_status(pid(), atom(), 'msg_id'|'job_key', string()) -> result().
+get_msg_status(ConnID, MsgType, Type, Value) ->
   Query = maps:put(Type, Value, #{}),
-  Req = {"GET", mipush_connection:build_request(?MSG_STATUS, Query)},
+  Req = {"GET", MsgType, mipush_connection:build_request(?MSG_STATUS, Query)},
   Result = mipush_connection:send_message(ConnID, Req, return),
   simplify_to_result(Result).
 
--spec get_msgs_status(pid(), non_neg_integer(), non_neg_integer()) -> result().
-get_msgs_status(ConnID, BeginTime, EndTime) ->
+-spec get_msgs_status(pid(), atom(), non_neg_integer(), non_neg_integer()) -> result().
+get_msgs_status(ConnID, MsgType, BeginTime, EndTime) ->
   Query = #{begin_time => BeginTime, end_time => EndTime},
-  Req = {"GET", mipush_connection:build_request(?MSGS_STATUS, Query)},
+  Req = {"GET", MsgType, mipush_connection:build_request(?MSGS_STATUS, Query)},
   Result = mipush_connection:send_message(ConnID, Req, return),
   simplify_to_result(Result).
 
 %% @doc 获取失效的regId列表
 %%获取失效的regId列表，每次请求最多返回1000个regId。
 %%每次请求之后，成功返回的失效的regId将会从MiPush数据库删除。
--spec get_invalid_regids(pid()) -> list().
-get_invalid_regids(ConnID) ->
-  Req = {"GET", mipush_connection:build_request(?INVALID_REGIDS_URL, [])},
+-spec get_invalid_regids(pid(), atom()) -> list().
+get_invalid_regids(ConnID, MsgType) ->
+  Req = {"GET", MsgType, mipush_connection:build_request(?INVALID_REGIDS_URL, [])},
   mipush_connection:send_message(ConnID, Req, return).
 
 %% ===================================================================
@@ -402,7 +402,10 @@ merge_connection(Connection) ->
   Default = #{host => "api.xmpush.xiaomi.com",
     name => undefined,
     port => 443,
-    auth_key => "please_config_api_key",
+    android_auth_key => "please_config_android_api_key",
+    android_reg_package_name => "please_config_android_package_name",
+    ios_auth_key => "please_config_ios_api_key",
+    ios_bundle_id => "please_config_ios_bundle_id",
     ssl_opts => [{nodelay, true}, {reuseaddr, true}],
     timeout =>  30000, %% ms
     expires => 300, %% s

@@ -66,14 +66,17 @@ handle_call(Msg, From, State = #{socket := undefined, expires := Expires, timeou
     _: ErrReason -> {stop, ErrReason}
   end;
 
-handle_call({Method, Query} = Req, From, State = #{socket := Socket, host := Host, auth_key := Auth,
+handle_call({Method, MsgType, Query} = Req, From, State = #{socket := Socket, host := Host,
+  android_auth_key := AndroidAuth, ios_auth_key := IOSAuth,
+  android_reg_package_name := AndroidPackageName, ios_bundle_id := IOSBundleId,
   expires := Expires, expires_conn := ExpiresConn}) ->
   case ExpiresConn =< epoch(0) of
     true ->
       ssl:close(Socket),
       handle_call(Req, From, State#{socket => undefined});
     false ->
-      case do_send_recv_data(Socket, Method, Query, Host, Auth) of
+      {Auth, NewQuery} = get_auth_and_query(MsgType, AndroidAuth, IOSAuth, AndroidPackageName, IOSBundleId, Query),
+      case do_send_recv_data(Socket, Method, NewQuery, Host, Auth) of
         {reply, Data} ->
           NewData = re:replace(Data, <<"\r\n\.+\r\n">>, <<"">>, [global, {return, binary}]),
           DataList = binary:split(NewData, [<<",">>], [global]),
@@ -96,14 +99,17 @@ handle_cast(Msg, State = #{socket := undefined, expires := Expires, timeout := T
     _: ErrReason -> {stop, ErrReason}
   end;
 handle_cast(stop, State) -> {stop, normal, State};
-handle_cast({Method, Query}, State = #{socket := Socket, host := Host, auth_key := Auth,
+handle_cast({Method, MsgType, Query}, State = #{socket := Socket, host := Host,
+  android_auth_key := AndroidAuth, ios_auth_key := IOSAuth,
+  android_reg_package_name := AndroidPackageName, ios_bundle_id := IOSBundleId,
   expires := Expires, expires_conn := ExpiresConn})  ->
   case ExpiresConn =< epoch(0) of
     true ->
       ssl:close(Socket),
       handle_cast(Query, State#{socket => undefined});
     false ->
-      Msg = joint_req(Method, Query, Auth, Host),
+      {Auth, NewQuery} = get_auth_and_query(MsgType, AndroidAuth, IOSAuth, AndroidPackageName, IOSBundleId, Query),
+      Msg = joint_req(Method, NewQuery, Auth, Host),
       case ssl:send(Socket, Msg) of
         ok ->
           {noreply, State#{expires_conn => epoch(Expires)}};
@@ -139,8 +145,8 @@ code_change(_OldVsn, State, _Extra) ->  {ok, State}.
 
 check_result(RestBin, ErrorFun) ->
   ResultList = binary:split(RestBin, [<<"\r\n">>], [global]),
-  case lists:keyfind(<<"result">>, 1, jsx:decode(lists:last(ResultList))) of
-    {_, <<"ok">>} -> ok;
+  case maps:get(<<"result">>, jsx:decode(lists:last(ResultList)), undefined) of
+    <<"ok">> -> ok;
     _ -> ErrorFun(ResultList)
   end.
 
@@ -155,9 +161,14 @@ build_request(Path, QueryParameters) ->
 %% INTERNAL FUNCTION
 %% ===================================================================
 
+get_auth_and_query(ios, _AndroidAuth, IOSAuth, _AndroidPackageName, IOSBundleId, Query) ->
+  {IOSAuth, Query ++ "&restricted_package_name=" ++ IOSBundleId};
+get_auth_and_query(android, AndroidAuth, _IOSAuth, AndroidPackageName, _IOSBundleId, Query) ->
+  {AndroidAuth, Query ++ "&restricted_package_name=" ++ AndroidPackageName}.
+
 joint_req(Method, Query, Auth, Host) ->
   [Method, " ", Query, " ", "HTTP/1.1", "\r\n",
-    [["Authorization", ": ", Auth, "\r\n"],
+    [["Authorization", ": key=", Auth, "\r\n"],
       ["Host", ": ", Host, "\r\n"],
       ["Content-Length", ": ", "0", "\r\n"]],
     "\r\n"].
