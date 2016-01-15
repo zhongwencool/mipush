@@ -145,9 +145,19 @@ code_change(_OldVsn, State, _Extra) ->  {ok, State}.
 
 check_result(RestBin, ErrorFun) ->
   ResultList = binary:split(RestBin, [<<"\r\n">>], [global]),
-  case maps:get(<<"result">>, jsx:decode(lists:last(ResultList)), undefined) of
-    <<"ok">> -> ok;
-    _ -> ErrorFun(ResultList)
+  Res = jsx:decode(lists:last(ResultList)),
+  %% for jsx version res is map or list
+  case is_list(Res) of
+    true ->
+      case lists:keyfind(<<"result">>, 1, Res) of
+        {_, <<"ok">>} -> ok;
+        _ -> ErrorFun(ResultList)
+      end;
+    false ->
+       case maps:get(<<"result">>, jsx:decode(lists:last(ResultList)), undefined) of
+         <<"ok">> -> ok;
+         _ -> ErrorFun(ResultList)
+       end
   end.
 
 build_request(Path, []) -> Path;

@@ -412,7 +412,7 @@ milliseconds_utc_since_1970({{_Year, _Month, _Day}, {_Hour, _Min, _Sec}} = Time)
 %% ===================================================================
 
 merge_connection(Connection) ->
-  Default = #{host => "api.xmpush.xiaomi.com",
+  Default = #{host => "sandbox.xmpush.xiaomi.com",
     name => undefined,
     port => 443,
     android_auth_key => "please_config_android_api_key",
